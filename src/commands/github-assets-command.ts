@@ -1,4 +1,5 @@
 import { emitCiArtifactHint, emitGitHubIssueAssets } from "../integrations/github-assets";
+import { existsSync } from "node:fs";
 
 export async function executeGitHubAssetsCommand(args: string[]): Promise<number> {
   let reportPath: string | undefined;
@@ -10,7 +11,14 @@ export async function executeGitHubAssetsCommand(args: string[]): Promise<number
   }
 
   if (!reportPath) {
-    throw new Error("Missing --report path");
+    process.stderr.write("[oh-my-memory] Missing --report path\n");
+    process.stderr.write("Usage: oh-my-memory emit-github-assets --report <report.json> [--create-issue]\n");
+    return 1;
+  }
+
+  if (!existsSync(reportPath)) {
+    process.stderr.write(`[oh-my-memory] Report file not found: ${reportPath}\n`);
+    return 1;
   }
 
   const result = await emitGitHubIssueAssets({ reportPath, createIssue });

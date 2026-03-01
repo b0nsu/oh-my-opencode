@@ -2,6 +2,8 @@ import { executeAggregateCommand } from "./commands/aggregate-command";
 import { executeDoctorCommand } from "./commands/doctor-command";
 import { executeGenerateCiCommand } from "./commands/generate-ci-command";
 import { executeGitHubAssetsCommand } from "./commands/github-assets-command";
+import { executeInitCommand } from "./commands/init-command";
+import { executePrintConfigCommand } from "./commands/print-config-command";
 import { executeRunCommand } from "./commands/run-command";
 
 function printHelp(): void {
@@ -14,8 +16,10 @@ function printHelp(): void {
       "  hook --stage <pre-test|during-test|post-test|build|custom> -- <cmd>",
       "  aggregate [--out-dir <path>]",
       "  emit-github-assets --report <report.json> [--create-issue]",
-      "  generate-ci [--out <path>]",
+      "  generate-ci [--provider github|gitlab|circleci|azure|shell] [--out <path>]",
       "  doctor [--config <path>]",
+      "  init [--out <path>]",
+      "  print-config [--config <path>]",
       "",
       "Examples:",
       "  oh-my-memory hook --stage pre-test -- bun run typecheck",
@@ -46,6 +50,14 @@ async function main(): Promise<number> {
 
   if (command === "doctor") {
     return executeDoctorCommand(rest);
+  }
+
+  if (command === "init") {
+    return executeInitCommand(rest);
+  }
+
+  if (command === "print-config") {
+    return executePrintConfigCommand(rest);
   }
 
   printHelp();

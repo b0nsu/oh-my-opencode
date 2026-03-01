@@ -3,6 +3,7 @@
   "sampleIntervalMs": 300,
   "maxSamples": 1500,
   "logTailBytes": 65536,
+  "maxArtifactBytes": 1073741824,
   "baselineFile": ".oh-my-memory/baseline.local.json",
   "baselineThresholds": {
     "regressionRssBytes": 157286400,
@@ -10,5 +11,13 @@
     "improvementRssBytes": 52428800,
     "improvementDurationMs": 4000
   },
-  "sentryDsnEnv": "OH_MY_MEMORY_SENTRY_DSN_LOCAL"
+  "sentryDsnEnv": "OH_MY_MEMORY_SENTRY_DSN_LOCAL",
+  "redaction": {
+    "enabled": true,
+    "replacement": "[REDACTED]"
+  },
+  "plugins": {
+    "collectors": [],
+    "reporters": []
+  }
 }

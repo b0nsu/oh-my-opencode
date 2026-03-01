@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import os from "node:os";
 
-import type { ResourceSample } from "../types";
+import type { MetricSupportItem, ResourceSample } from "../types";
 
 function parseLinuxProcIo(pid: number): { readBytes?: number; writeBytes?: number } {
   const path = `/proc/${pid}/io`;
@@ -99,4 +99,47 @@ export function platformInfo() {
     hostCpus: os.cpus().length,
     totalMemoryBytes: os.totalmem(),
   };
+}
+
+export function metricSupportMatrix(): MetricSupportItem[] {
+  const onWindows = process.platform === "win32";
+  const onLinux = process.platform === "linux";
+
+  return [
+    {
+      metric: "rssBytes",
+      mode: "native",
+      reason: onWindows ? "process.memoryUsage fallback" : "ps rss",
+    },
+    {
+      metric: "cpuPercent",
+      mode: onWindows ? "unsupported" : "native",
+      reason: onWindows ? "ps collector unavailable on win32" : "ps %cpu",
+    },
+    {
+      metric: "vszBytes",
+      mode: onWindows ? "unsupported" : "native",
+      reason: onWindows ? "ps collector unavailable on win32" : "ps vsz",
+    },
+    {
+      metric: "ioReadBytes",
+      mode: onLinux ? "native" : "unsupported",
+      reason: onLinux ? "/proc/<pid>/io" : "linux procfs only",
+    },
+    {
+      metric: "ioWriteBytes",
+      mode: onLinux ? "native" : "unsupported",
+      reason: onLinux ? "/proc/<pid>/io" : "linux procfs only",
+    },
+    {
+      metric: "threadCount",
+      mode: onWindows ? "unsupported" : "native",
+      reason: onWindows ? "ps collector unavailable on win32" : "ps thcount",
+    },
+    {
+      metric: "processTreeSize",
+      mode: onWindows ? "unsupported" : "native",
+      reason: onWindows ? "ps process tree unavailable on win32" : "ps parent-child scan",
+    },
+  ];
 }

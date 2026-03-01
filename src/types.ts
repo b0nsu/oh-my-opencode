@@ -12,6 +12,12 @@ export interface ResourceSample {
   processTreeSize?: number;
 }
 
+export interface MetricSupportItem {
+  metric: "rssBytes" | "cpuPercent" | "vszBytes" | "ioReadBytes" | "ioWriteBytes" | "threadCount" | "processTreeSize";
+  mode: "native" | "fallback" | "unsupported";
+  reason: string;
+}
+
 export interface ArtifactRef {
   name: string;
   path: string;
@@ -79,6 +85,7 @@ export interface OhMyMemoryConfig {
   sampleIntervalMs: number;
   maxSamples: number;
   logTailBytes: number;
+  maxArtifactBytes: number;
   crashPatterns: string[];
   symbolGlobs: string[];
   baselineFile: string;
@@ -91,6 +98,15 @@ export interface OhMyMemoryConfig {
   failOnSeverity?: "high" | "critical";
   sentryDsn?: string;
   sentryDsnEnv: string;
+  redaction: {
+    enabled: boolean;
+    replacement: string;
+    patterns: string[];
+  };
+  plugins: {
+    collectors: string[];
+    reporters: string[];
+  };
 }
 
 export interface RunOptions {
@@ -98,4 +114,23 @@ export interface RunOptions {
   label?: string;
   command: string[];
   cwd: string;
+}
+
+export interface CollectorPlugin {
+  name?: string;
+  collectSample?: (args: {
+    sample: ResourceSample;
+    pid: number;
+    cwd: string;
+    stage: RunStage;
+  }) => Partial<ResourceSample> | void;
+}
+
+export interface ReporterPlugin {
+  name?: string;
+  onReport?: (args: {
+    report: RunReport;
+    runDir: string;
+    cwd: string;
+  }) => void | Promise<void>;
 }

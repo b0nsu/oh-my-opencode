@@ -61,16 +61,27 @@ Reports are written under `.oh-my-memory/runs/<run_id>/`.
 - `bun run src/cli.ts hook --stage <stage> -- <command...>`
 - `bun run src/cli.ts aggregate [--out-dir .oh-my-memory]`
 - `bun run src/cli.ts emit-github-assets --report <report.json> [--create-issue]`
-- `bun run src/cli.ts generate-ci [--out examples/github-actions-oh-my-memory.yml]`
+- `bun run src/cli.ts generate-ci [--provider github|gitlab|circleci|azure|shell] [--out <path>]`
 - `bun run src/cli.ts doctor [--config <path>]`
+- `bun run src/cli.ts init [--out .oh-my-memory.config.jsonc]`
+- `bun run src/cli.ts print-config [--config <path>]`
 
 ## CI Orbit
 
-Workflow template: `examples/github-actions-oh-my-memory.yml`
+Workflow templates:
+
+- `examples/github-actions-oh-my-memory.yml`
+- `examples/gitlab-ci-oh-my-memory.yml`
+- `examples/circleci-oh-my-memory.yml`
+- `examples/azure-pipelines-oh-my-memory.yml`
+- `examples/ci-oh-my-memory.sh`
 
 ```bash
-# regenerate example workflow
-bun run src/cli.ts generate-ci
+# regenerate GitHub Actions workflow
+bun run src/cli.ts generate-ci --provider github
+
+# generate GitLab CI workflow
+bun run src/cli.ts generate-ci --provider gitlab
 ```
 
 The template runs hook stages with `configs/ci.json`, uploads artifacts on failure, and emits an issue template from the latest report.
@@ -115,6 +126,7 @@ Artifacts are copied into:
   "sampleIntervalMs": 250,
   "maxSamples": 2000,
   "logTailBytes": 65536,
+  "maxArtifactBytes": 1073741824,
   "crashPatterns": ["core", "core.*", "*.dmp", "*.mdmp", "*.stackdump"],
   "symbolGlobs": ["dist/**/*.map", "dist/**/*.dSYM", "build/**/*.pdb"],
   "baselineFile": ".oh-my-memory/baseline.json",
@@ -124,7 +136,11 @@ Artifacts are copied into:
     "improvementRssBytes": 67108864,
     "improvementDurationMs": 5000
   },
-  "sentryDsnEnv": "OH_MY_MEMORY_SENTRY_DSN"
+  "sentryDsnEnv": "OH_MY_MEMORY_SENTRY_DSN",
+  "redaction": {
+    "enabled": true,
+    "replacement": "[REDACTED]"
+  }
 }
 ```
 

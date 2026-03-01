@@ -3,6 +3,7 @@
   "sampleIntervalMs": 250,
   "maxSamples": 2000,
   "logTailBytes": 65536,
+  "maxArtifactBytes": 1073741824,
   "crashPatterns": [
     "core",
     "core.*",
@@ -22,5 +23,18 @@
     "improvementRssBytes": 67108864,
     "improvementDurationMs": 5000
   },
-  "sentryDsnEnv": "OH_MY_MEMORY_SENTRY_DSN"
+  "sentryDsnEnv": "OH_MY_MEMORY_SENTRY_DSN",
+  "redaction": {
+    "enabled": true,
+    "replacement": "[REDACTED]",
+    "patterns": [
+      "(sk-[A-Za-z0-9_-]{16,})",
+      "(ghp_[A-Za-z0-9]{16,})",
+      "(AKIA[0-9A-Z]{16})"
+    ]
+  },
+  "plugins": {
+    "collectors": [],
+    "reporters": []
+  }
 }

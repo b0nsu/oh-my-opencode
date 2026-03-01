@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/oh-my-memory.schema.json",
+  "title": "oh-my-memory config",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "outDir": { "type": "string", "minLength": 1 },
+    "sampleIntervalMs": { "type": "integer", "minimum": 1 },
+    "maxSamples": { "type": "integer", "minimum": 1 },
+    "logTailBytes": { "type": "integer", "minimum": 1 },
+    "maxArtifactBytes": { "type": "integer", "minimum": 1 },
+    "crashPatterns": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "symbolGlobs": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "baselineFile": { "type": "string", "minLength": 1 },
+    "baselineThresholds": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "regressionRssBytes": { "type": "integer", "minimum": 1 },
+        "regressionDurationMs": { "type": "integer", "minimum": 1 },
+        "improvementRssBytes": { "type": "integer", "minimum": 1 },
+        "improvementDurationMs": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "failOnSeverity": {
+      "type": "string",
+      "enum": ["high", "critical"]
+    },
+    "sentryDsn": { "type": "string" },
+    "sentryDsnEnv": { "type": "string", "minLength": 1 },
+    "redaction": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "replacement": { "type": "string" },
+        "patterns": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "plugins": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "collectors": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "reporters": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    }
+  }
+}

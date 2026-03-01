@@ -33,8 +33,9 @@ export async function collectCrashArtifacts(args: {
   patterns: string[];
   artifactCrashDir: string;
   includeSymbols: string[];
+  maxArtifactBytes: number;
 }): Promise<{ dumps: ArtifactRef[]; symbols: ArtifactRef[] }> {
-  const { cwd, patterns, artifactCrashDir } = args;
+  const { cwd, patterns, artifactCrashDir, maxArtifactBytes } = args;
   const regexes = patterns.map(globLikeToRegExp);
   const files = await walk(resolve(cwd), 2);
 
@@ -43,6 +44,13 @@ export async function collectCrashArtifacts(args: {
   for (const file of files) {
     const fileName = basename(file);
     if (!regexes.some((regex) => regex.test(fileName))) continue;
+    const sourceBytes = await bytesOfFile(file);
+    if (typeof sourceBytes === "number" && sourceBytes > maxArtifactBytes) {
+      process.stderr.write(
+        `[oh-my-memory] Skip artifact ${fileName} (${sourceBytes} bytes > maxArtifactBytes=${maxArtifactBytes})\n`,
+      );
+      continue;
+    }
     const target = join(artifactCrashDir, fileName);
     await copyFile(file, target);
     dumps.push({
@@ -53,11 +61,16 @@ export async function collectCrashArtifacts(args: {
     });
   }
 
-  const symbols = await collectSymbolArtifacts(cwd, args.includeSymbols, join(artifactCrashDir, "symbols"));
+  const symbols = await collectSymbolArtifacts(cwd, args.includeSymbols, join(artifactCrashDir, "symbols"), maxArtifactBytes);
   return { dumps, symbols };
 }
 
-async function collectSymbolArtifacts(cwd: string, patterns: string[], outDir: string): Promise<ArtifactRef[]> {
+async function collectSymbolArtifacts(
+  cwd: string,
+  patterns: string[],
+  outDir: string,
+  maxArtifactBytes: number,
+): Promise<ArtifactRef[]> {
   if (patterns.length === 0) return [];
   const files = await walk(resolve(cwd), 4);
   const regexes = patterns.map(globLikeToRegExp);
@@ -68,6 +81,13 @@ async function collectSymbolArtifacts(cwd: string, patterns: string[], outDir: s
   const refs: ArtifactRef[] = [];
   for (const file of matched) {
     const name = basename(file);
+    const sourceBytes = await bytesOfFile(file);
+    if (typeof sourceBytes === "number" && sourceBytes > maxArtifactBytes) {
+      process.stderr.write(
+        `[oh-my-memory] Skip symbol artifact ${name} (${sourceBytes} bytes > maxArtifactBytes=${maxArtifactBytes})\n`,
+      );
+      continue;
+    }
     const target = join(outDir, name);
     await copyFile(file, target);
     refs.push({

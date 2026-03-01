@@ -13,6 +13,12 @@ interface ParsedRunArgs {
   inlineConfig: ConfigOverride;
 }
 
+const VALID_STAGES: RunStage[] = ["pre-test", "during-test", "post-test", "build", "custom"];
+
+function isStage(value: string): value is RunStage {
+  return VALID_STAGES.includes(value as RunStage);
+}
+
 function parseRunArgs(args: string[]): ParsedRunArgs {
   const commandSeparator = args.indexOf("--");
   const left = commandSeparator >= 0 ? args.slice(0, commandSeparator) : args;
@@ -25,12 +31,28 @@ function parseRunArgs(args: string[]): ParsedRunArgs {
 
   for (let i = 0; i < left.length; i += 1) {
     const token = left[i];
-    if (token === "--config") configPath = left[i + 1];
-    if (token === "--stage") stage = (left[i + 1] as RunStage) ?? "custom";
-    if (token === "--label") label = left[i + 1];
+    if (token === "--config") {
+      const value = left[i + 1];
+      if (!value) throw new Error("Missing value for --config");
+      configPath = value;
+    }
+    if (token === "--stage") {
+      const value = left[i + 1];
+      if (!value) throw new Error("Missing value for --stage");
+      if (!isStage(value)) {
+        throw new Error(`Invalid --stage '${value}'. Use one of: ${VALID_STAGES.join(", ")}`);
+      }
+      stage = value;
+    }
+    if (token === "--label") {
+      const value = left[i + 1];
+      if (!value) throw new Error("Missing value for --label");
+      label = value;
+    }
     if (token === "--out-dir") inlineConfig.outDir = left[i + 1] ?? inlineConfig.outDir;
     if (token === "--sample-interval-ms") inlineConfig.sampleIntervalMs = Number(left[i + 1]);
     if (token === "--max-samples") inlineConfig.maxSamples = Number(left[i + 1]);
+    if (token === "--max-artifact-bytes") inlineConfig.maxArtifactBytes = Number(left[i + 1]);
     if (token === "--sentry-dsn") inlineConfig.sentryDsn = left[i + 1];
   }
 
@@ -43,7 +65,15 @@ function parseRunArgs(args: string[]): ParsedRunArgs {
 }
 
 export async function executeRunCommand(args: string[]): Promise<number> {
-  const parsed = parseRunArgs(args);
+  let parsed: ParsedRunArgs;
+  try {
+    parsed = parseRunArgs(args);
+  } catch (error) {
+    process.stderr.write(`[oh-my-memory] ${String(error)}\n`);
+    process.stderr.write("Usage: oh-my-memory run --stage <pre-test|during-test|post-test|build|custom> -- <cmd>\n");
+    return 1;
+  }
+
   const config = readConfig(parsed.configPath, parsed.inlineConfig);
 
   const report = await runInstrumentedCommand(config, {
