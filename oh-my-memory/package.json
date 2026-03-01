@@ -1,0 +1,39 @@
+{
+  "name": "oh-my-memory",
+  "version": "0.1.0",
+  "description": "Local/CI runtime memory and crash instrumentation toolkit",
+  "type": "module",
+  "bin": {
+    "oh-my-memory": "dist/cli.js"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "docker",
+    "examples",
+    "configs"
+  ],
+  "scripts": {
+    "build": "bun build src/index.ts --outfile dist/index.js --target bun --format esm && bun build src/cli.ts --outfile dist/cli.js --target bun --format esm && tsc --emitDeclarationOnly",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test",
+    "clean": "rm -rf dist",
+    "hook:pre": "bun run src/cli.ts hook --config configs/local.json --stage pre-test -- bun run typecheck",
+    "hook:during": "bun run src/cli.ts hook --config configs/local.json --stage during-test -- bun test",
+    "hook:post": "bun run src/cli.ts hook --config configs/local.json --stage post-test -- bun run build"
+  },
+  "keywords": [
+    "profiling",
+    "memory",
+    "crash",
+    "ci",
+    "telemetry"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "bun-types": "1.3.6",
+    "typescript": "^5.7.3"
+  }
+}
