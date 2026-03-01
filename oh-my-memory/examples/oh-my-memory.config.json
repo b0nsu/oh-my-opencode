@@ -1,0 +1,26 @@
+{
+  "outDir": ".oh-my-memory",
+  "sampleIntervalMs": 250,
+  "maxSamples": 2000,
+  "logTailBytes": 65536,
+  "crashPatterns": [
+    "core",
+    "core.*",
+    "*.dmp",
+    "*.mdmp",
+    "*.stackdump"
+  ],
+  "symbolGlobs": [
+    "dist/**/*.map",
+    "dist/**/*.dSYM",
+    "build/**/*.pdb"
+  ],
+  "baselineFile": ".oh-my-memory/baseline.json",
+  "baselineThresholds": {
+    "regressionRssBytes": 134217728,
+    "regressionDurationMs": 15000,
+    "improvementRssBytes": 67108864,
+    "improvementDurationMs": 5000
+  },
+  "sentryDsnEnv": "OH_MY_MEMORY_SENTRY_DSN"
+}

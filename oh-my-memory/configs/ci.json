@@ -1,0 +1,14 @@
+{
+  "outDir": ".oh-my-memory",
+  "sampleIntervalMs": 200,
+  "maxSamples": 3000,
+  "logTailBytes": 131072,
+  "baselineFile": ".oh-my-memory/baseline.ci.json",
+  "baselineThresholds": {
+    "regressionRssBytes": 134217728,
+    "regressionDurationMs": 15000,
+    "improvementRssBytes": 67108864,
+    "improvementDurationMs": 5000
+  },
+  "sentryDsnEnv": "OH_MY_MEMORY_SENTRY_DSN"
+}

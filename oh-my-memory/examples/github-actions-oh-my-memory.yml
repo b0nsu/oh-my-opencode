@@ -1,0 +1,60 @@
+name: oh-my-memory-ci-example
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  instrumented-test:
+    runs-on: ubuntu-latest
+    env:
+      OH_MY_MEMORY_CREATE_ISSUE: "false"
+    permissions:
+      issues: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install
+
+      - name: Pre-test hook
+        run: bunx oh-my-memory hook --config configs/ci.json --stage pre-test -- bun run typecheck
+
+      - name: During-test hook
+        run: bunx oh-my-memory hook --config configs/ci.json --stage during-test -- bun test
+
+      - name: Post-test hook
+        if: always()
+        run: bunx oh-my-memory hook --config configs/ci.json --stage post-test -- bun run build
+
+      - name: Resolve latest report path
+        if: always()
+        id: latest_report
+        run: |
+          if [ -f .oh-my-memory/latest-report-path.txt ]; then
+            REPORT_PATH=$(cat .oh-my-memory/latest-report-path.txt)
+            REPORT_PATH=$(echo "$REPORT_PATH" | tr -d '\r\n')
+            echo "path=$REPORT_PATH" >> "$GITHUB_OUTPUT"
+          else
+            echo "path=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: oh-my-memory-artifacts
+          path: .oh-my-memory
+          retention-days: 14
+
+      - name: Emit issue template from latest report
+        if: failure() && steps.latest_report.outputs.path != ''
+        run: bunx oh-my-memory emit-github-assets --report "${{ steps.latest_report.outputs.path }}"
+
+      - name: Optional auto-create GitHub issue
+        if: failure() && steps.latest_report.outputs.path != '' && env.OH_MY_MEMORY_CREATE_ISSUE == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bunx oh-my-memory emit-github-assets --report "${{ steps.latest_report.outputs.path }}" --create-issue

@@ -1,0 +1,21 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: oh-my-memory-test-job
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: memory-agent
+          image: your-registry/oh-my-memory:latest
+          command: ["/entrypoint.sh", "during-test", "--", "bun", "test"]
+          env:
+            - name: CI
+              value: "true"
+          volumeMounts:
+            - name: artifacts
+              mountPath: /workspace/.oh-my-memory
+      volumes:
+        - name: artifacts
+          emptyDir: {}
