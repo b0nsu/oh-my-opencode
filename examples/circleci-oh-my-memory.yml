@@ -1,0 +1,23 @@
+version: 2.1
+
+jobs:
+  oh-my-memory:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - run: curl -fsSL https://bun.sh/install | bash
+      - run: echo 'export PATH="$HOME/.bun/bin:$PATH"' >> "$BASH_ENV"
+      - run: source "$BASH_ENV" && bun install
+      - run: source "$BASH_ENV" && bunx oh-my-memory hook --config configs/ci.json --stage pre-test -- bun run typecheck
+      - run: source "$BASH_ENV" && bunx oh-my-memory hook --config configs/ci.json --stage during-test -- bun test
+      - run: source "$BASH_ENV" && bunx oh-my-memory hook --config configs/ci.json --stage post-test -- bun run build
+      - run: source "$BASH_ENV" && bunx oh-my-memory aggregate --config configs/ci.json
+      - store_artifacts:
+          path: .oh-my-memory
+
+workflows:
+  version: 2
+  main:
+    jobs:
+      - oh-my-memory

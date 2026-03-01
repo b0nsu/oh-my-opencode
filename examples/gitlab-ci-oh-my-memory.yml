@@ -1,0 +1,17 @@
+stages:
+  - test
+
+oh_my_memory:
+  stage: test
+  image: oven/bun:latest
+  script:
+    - bun install
+    - bunx oh-my-memory hook --config configs/ci.json --stage pre-test -- bun run typecheck
+    - bunx oh-my-memory hook --config configs/ci.json --stage during-test -- bun test
+    - bunx oh-my-memory hook --config configs/ci.json --stage post-test -- bun run build
+    - bunx oh-my-memory aggregate --config configs/ci.json
+  artifacts:
+    when: always
+    paths:
+      - .oh-my-memory/
+    expire_in: 14 days

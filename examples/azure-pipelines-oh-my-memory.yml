@@ -1,0 +1,36 @@
+trigger:
+  - main
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+  - checkout: self
+  - script: |
+      curl -fsSL https://bun.sh/install | bash
+      echo "##vso[task.prependpath]$HOME/.bun/bin"
+    displayName: Install Bun
+
+  - script: bun install
+    displayName: Install dependencies
+
+  - script: bunx oh-my-memory hook --config configs/ci.json --stage pre-test -- bun run typecheck
+    displayName: Pre-test hook
+
+  - script: bunx oh-my-memory hook --config configs/ci.json --stage during-test -- bun test
+    displayName: During-test hook
+
+  - script: bunx oh-my-memory hook --config configs/ci.json --stage post-test -- bun run build
+    displayName: Post-test hook
+    condition: always()
+
+  - script: bunx oh-my-memory aggregate --config configs/ci.json
+    displayName: Aggregate reports
+    condition: always()
+
+  - task: PublishBuildArtifacts@1
+    displayName: Publish oh-my-memory artifacts
+    condition: always()
+    inputs:
+      PathtoPublish: .oh-my-memory
+      ArtifactName: oh-my-memory
