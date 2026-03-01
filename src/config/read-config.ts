@@ -11,6 +11,7 @@ export type ConfigOverride = Partial<Omit<OhMyMemoryConfig, "baselineThresholds"
 };
 
 interface ConfigInput {
+  configVersion?: string;
   outDir?: string;
   sampleIntervalMs?: number;
   maxSamples?: number;
@@ -51,7 +52,7 @@ function sanitizeNumber(value: unknown, fallback: number): number {
   return Math.floor(value);
 }
 
-function parseJsonc(input: string): unknown {
+export function parseJsonc(input: string): unknown {
   const withoutBlockComments = input.replace(/\/\*[\s\S]*?\*\//g, "");
   const withoutLineComments = withoutBlockComments.replace(/(^|\s)\/\/.*$/gm, "$1");
   const normalized = withoutLineComments.replace(/,\s*([}\]])/g, "$1");
@@ -149,6 +150,15 @@ function buildMergedInput(configPath?: string, inline?: ConfigOverride): { merge
 export function readConfigWithMeta(configPath?: string, inline?: ConfigOverride): ResolvedConfigResult {
   const { merged: fileMerged, sources } = buildMergedInput(configPath, inline);
 
+  if (
+    typeof fileMerged.configVersion === "string" &&
+    fileMerged.configVersion !== defaultConfig.configVersion
+  ) {
+    throw new Error(
+      `Unsupported configVersion '${fileMerged.configVersion}'. Run: oh-my-memory migrate-config --config <path>`,
+    );
+  }
+
   const merged = {
     ...defaultConfig,
     ...fileMerged,
@@ -173,6 +183,7 @@ export function readConfigWithMeta(configPath?: string, inline?: ConfigOverride)
 
   return {
     config: {
+      configVersion: defaultConfig.configVersion,
       outDir: merged.outDir,
       sampleIntervalMs: sanitizeNumber(merged.sampleIntervalMs, defaultConfig.sampleIntervalMs),
       maxSamples: sanitizeNumber(merged.maxSamples, defaultConfig.maxSamples),

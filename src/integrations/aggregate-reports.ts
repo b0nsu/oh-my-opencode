@@ -55,6 +55,8 @@ export async function aggregateReports(outDir: string): Promise<{ jsonPath: stri
 
   const topCrashes = [...crashCount.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
   const summary = {
+    aggregateVersion: "1.0.0",
+    sourceReportSchemaVersion: "1.0.0",
     generatedAt: new Date().toISOString(),
     totalRuns: reports.length,
     failures: failures.length,

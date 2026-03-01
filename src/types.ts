@@ -81,6 +81,7 @@ export interface RunReport {
 }
 
 export interface OhMyMemoryConfig {
+  configVersion: "1.0.0";
   outDir: string;
   sampleIntervalMs: number;
   maxSamples: number;

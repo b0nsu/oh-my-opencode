@@ -14,6 +14,7 @@ export async function writeMarkdownReport(runDir: string, report: RunReport): Pr
   lines.push("# oh-my-memory Report");
   lines.push("");
   lines.push(`- Run ID: ${report.runId}`);
+  lines.push(`- Report schema: ${report.schemaVersion}`);
   lines.push(`- Stage: ${report.stage}`);
   lines.push(`- Status: ${report.status}`);
   lines.push(`- Exit code: ${report.exitCode ?? "n/a"}`);

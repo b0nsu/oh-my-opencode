@@ -5,6 +5,10 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
+    "configVersion": {
+      "type": "string",
+      "enum": ["1.0.0"]
+    },
     "outDir": { "type": "string", "minLength": 1 },
     "sampleIntervalMs": { "type": "integer", "minimum": 1 },
     "maxSamples": { "type": "integer", "minimum": 1 },

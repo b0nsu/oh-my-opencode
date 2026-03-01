@@ -58,4 +58,19 @@ describe("readConfig", () => {
       rmSync(tempDir, { recursive: true, force: true });
     }
   });
+
+  it("throws on unsupported configVersion", () => {
+    const tempDir = mkdtempSync(join(os.tmpdir(), "oh-my-memory-config-ver-"));
+    try {
+      const configPath = join(tempDir, "config.json");
+      writeFileSync(
+        configPath,
+        JSON.stringify({ configVersion: "9.9.9", outDir: ".oh-my-memory" }, null, 2),
+        "utf-8",
+      );
+      expect(() => readConfig(configPath)).toThrow("Unsupported configVersion");
+    } finally {
+      rmSync(tempDir, { recursive: true, force: true });
+    }
+  });
 });

@@ -1,4 +1,5 @@
 {
+  "configVersion": "1.0.0",
   "outDir": ".oh-my-memory",
   "sampleIntervalMs": 200,
   "maxSamples": 3000,

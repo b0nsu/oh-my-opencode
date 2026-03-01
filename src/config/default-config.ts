@@ -1,6 +1,7 @@
 import type { OhMyMemoryConfig } from "../types";
 
 export const defaultConfig: OhMyMemoryConfig = {
+  configVersion: "1.0.0",
   outDir: ".oh-my-memory",
   sampleIntervalMs: 250,
   maxSamples: 2000,

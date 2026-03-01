@@ -6,6 +6,8 @@ import { writeText } from "../shared/file-utils";
 function defaultJsoncTemplate(): string {
   return [
     "{",
+    '  "$schema": "./schemas/oh-my-memory.schema.json",',
+    `  "configVersion": "${defaultConfig.configVersion}",`,
     '  // Output directory for run artifacts',
     `  "outDir": "${defaultConfig.outDir}",`,
     `  "sampleIntervalMs": ${defaultConfig.sampleIntervalMs},`,

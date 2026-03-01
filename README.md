@@ -65,6 +65,7 @@ Reports are written under `.oh-my-memory/runs/<run_id>/`.
 - `bun run src/cli.ts doctor [--config <path>]`
 - `bun run src/cli.ts init [--out .oh-my-memory.config.jsonc]`
 - `bun run src/cli.ts print-config [--config <path>]`
+- `bun run src/cli.ts migrate-config --config <path> [--out <path>]`
 
 ## CI Orbit
 
@@ -122,6 +123,7 @@ Artifacts are copied into:
 
 ```json
 {
+  "configVersion": "1.0.0",
   "outDir": ".oh-my-memory",
   "sampleIntervalMs": 250,
   "maxSamples": 2000,

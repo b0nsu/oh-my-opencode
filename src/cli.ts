@@ -3,6 +3,7 @@ import { executeDoctorCommand } from "./commands/doctor-command";
 import { executeGenerateCiCommand } from "./commands/generate-ci-command";
 import { executeGitHubAssetsCommand } from "./commands/github-assets-command";
 import { executeInitCommand } from "./commands/init-command";
+import { executeMigrateConfigCommand } from "./commands/migrate-config-command";
 import { executePrintConfigCommand } from "./commands/print-config-command";
 import { executeRunCommand } from "./commands/run-command";
 
@@ -20,6 +21,7 @@ function printHelp(): void {
       "  doctor [--config <path>]",
       "  init [--out <path>]",
       "  print-config [--config <path>]",
+      "  migrate-config --config <path> [--out <path>]",
       "",
       "Examples:",
       "  oh-my-memory hook --stage pre-test -- bun run typecheck",
@@ -58,6 +60,10 @@ async function main(): Promise<number> {
 
   if (command === "print-config") {
     return executePrintConfigCommand(rest);
+  }
+
+  if (command === "migrate-config") {
+    return executeMigrateConfigCommand(rest);
   }
 
   printHelp();
