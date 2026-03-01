@@ -1,99 +1,113 @@
 # oh-my-memory
 
-`oh-my-memory` is a CLI-first runtime instrumentation tool for local and CI builds.
+<div align="center">
 
-It wraps your existing command and records:
+**Runtime observability for builds, tests, and crashes.**  
+**Constellation-themed telemetry for local and CI pipelines.**
 
-- pre/during/post test build hook stages
-- runtime resource profile (RSS/VSZ, CPU, I/O, thread/process tree)
-- crash capture bundles (core/minidump + symbol artifacts)
-- automatic baseline analysis (stack traces, hot modules, leak/overflow signs)
-- JSON + human-readable reports
-- CI helper outputs for artifact upload and issue templates
-- optional aggregate stats and optional Sentry event emission
-- container awareness (Docker/Kubernetes hints + cgroup memory limit)
+[![runtime-bun](https://img.shields.io/badge/runtime-bun-000000?style=flat-square&logo=bun&logoColor=white)](https://bun.sh)
+[![language-typescript](https://img.shields.io/badge/language-typescript-3178c6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+![license-mit](https://img.shields.io/badge/license-MIT-2ea44f?style=flat-square)
+[![theme-constellation](https://img.shields.io/badge/theme-constellation-1f2a44?style=flat-square)](#constellation-map)
 
-## Install
+```text
+       *        .            *
+  .         *       .
+        .        *       .
+   *         .        *
 
-```bash
-bun install
-bun run build
+      o h - m y - m e m o r y
+     constellation telemetry
 ```
+
+</div>
+
+> [!NOTE]
+> `oh-my-memory` wraps your existing build/test command and records runtime resources, crash artifacts, and baseline analysis into JSON + Markdown reports.
+
+## Constellation Map
+
+| Constellation | Responsibility |
+| :-- | :-- |
+| Orion | Hook stages (`pre-test`, `during-test`, `post-test`, `build`, `custom`) |
+| Lyra | Runtime sampler (RSS/VSZ, CPU, I/O, thread/process tree) |
+| Perseus | Crash capture (core/minidump + symbol artifacts) |
+| Cassiopeia | Automatic analysis (stack, hot modules, leak/overflow signals) |
+| Andromeda | Report emitters (`report.json`, `report.md`) |
+| Polaris | CI integration (artifact hints + GitHub issue template flow) |
+| Nebula | Aggregation (`aggregate.json`, `aggregate.md`) |
+| Kepler | Container awareness (Docker/Kubernetes, cgroup memory hint) |
 
 ## Quick Start
 
 ```bash
-# pre-test instrumentation
+bun install
+bun run build
+
+# health check
+bun run src/cli.ts doctor --config configs/local.json
+
+# run hooks around your pipeline
 bun run src/cli.ts hook --config configs/local.json --stage pre-test -- bun run typecheck
-
-# during-test instrumentation
 bun run src/cli.ts hook --config configs/local.json --stage during-test -- bun test
-
-# post-test instrumentation
 bun run src/cli.ts hook --config configs/local.json --stage post-test -- bun run build
 ```
 
-Outputs are written under `.oh-my-memory/runs/<run_id>/`.
+Reports are written under `.oh-my-memory/runs/<run_id>/`.
 
-## Commands
+## Command Deck
 
-- `oh-my-memory run --stage <stage> -- <command...>`
-- `oh-my-memory hook --stage <stage> -- <command...>`
-- `oh-my-memory aggregate [--out-dir .oh-my-memory]`
-- `oh-my-memory emit-github-assets --report <report.json> [--create-issue]`
-- `oh-my-memory generate-ci [--out examples/github-actions-oh-my-memory.yml]`
-- `oh-my-memory doctor`
+- `bun run src/cli.ts run --stage <stage> -- <command...>`
+- `bun run src/cli.ts hook --stage <stage> -- <command...>`
+- `bun run src/cli.ts aggregate [--out-dir .oh-my-memory]`
+- `bun run src/cli.ts emit-github-assets --report <report.json> [--create-issue]`
+- `bun run src/cli.ts generate-ci [--out examples/github-actions-oh-my-memory.yml]`
+- `bun run src/cli.ts doctor [--config <path>]`
 
-## CI Integration (GitHub Actions)
+## CI Orbit
 
-Generate example workflow:
+Workflow template: `examples/github-actions-oh-my-memory.yml`
 
 ```bash
+# regenerate example workflow
 bun run src/cli.ts generate-ci
 ```
 
-This produces a workflow snippet with pre/during/post hook stages and artifact upload on failure.
+The template runs hook stages with `configs/ci.json`, uploads artifacts on failure, and emits an issue template from the latest report.
 
-Repository-level real workflow is included at:
+### CI toggles
 
-- `.github/workflows/oh-my-memory-ci.yml`
+- `OH_MY_MEMORY_CREATE_ISSUE="true"` enables automatic issue creation.
+- Keep issue auto-create branch-gated (for example, `dev`) to avoid noise.
+- `OH_MY_MEMORY_SENTRY_DSN` can be injected as a secret for optional Sentry forwarding.
 
-It runs hooks in CI with `configs/ci.json`, uploads artifacts on failure, and emits a GitHub issue template from the latest report.
+## Crash + Symbol Capture
 
-Operational toggles in `.github/workflows/oh-my-memory-ci.yml`:
+Default crash patterns:
 
-- `OH_MY_MEMORY_CREATE_ISSUE`: set `"true"` to allow automatic issue creation
-- auto-create step is further gated to `dev` branch only
+- `core`
+- `core.*`
+- `*.dmp`
+- `*.mdmp`
+- `*.stackdump`
 
-Required secret for issue creation:
+Default symbol globs:
 
-- `GITHUB_TOKEN` (already available in GitHub Actions context)
-- optional Sentry DSN secret mapped to env `OH_MY_MEMORY_SENTRY_DSN`
+- `dist/**/*.map`
+- `dist/**/*.dSYM`
+- `build/**/*.pdb`
 
-## Crash Capture and Symbols
-
-- crash patterns default: `core`, `core.*`, `*.dmp`, `*.mdmp`, `*.stackdump`
-- symbol globs default: `dist/**/*.map`, `dist/**/*.dSYM`, `build/**/*.pdb`
-
-When failures happen, `oh-my-memory` scans and copies matching files into:
+Artifacts are copied into:
 
 - `artifacts/crash/`
 - `artifacts/crash/symbols/`
 
-## Sentry (optional)
+## Container Flight
 
-Set `--sentry-dsn` (or config field) to attempt a lightweight event post on failed runs.
+- Docker agent: `docker/Dockerfile.agent`, `docker/entrypoint.sh`
+- Kubernetes example: `examples/kubernetes-job.yaml`
 
-Environment-based DSN is also supported via `sentryDsnEnv`.
-
-- local default: `OH_MY_MEMORY_SENTRY_DSN_LOCAL`
-- ci default: `OH_MY_MEMORY_SENTRY_DSN`
-
-## Docker/Container Usage
-
-See `docker/Dockerfile.agent` and `docker/entrypoint.sh` for agent-style container execution.
-
-## Example Config
+## Configuration
 
 ```json
 {
@@ -114,8 +128,20 @@ See `docker/Dockerfile.agent` and `docker/entrypoint.sh` for agent-style contain
 }
 ```
 
-## Environment Tuning
+Environment profiles:
 
-- `configs/local.json`: relaxed baseline for developer machines
-- `configs/ci.json`: stricter CI threshold profile
-- override at runtime: `--config configs/ci.json`
+- `configs/local.json` for local development
+- `configs/ci.json` for CI thresholds and stricter sampling
+
+## Real Smoke Test
+
+```bash
+bun run src/cli.ts hook --config configs/local.json --stage custom -- bun --version
+bun run src/cli.ts aggregate --out-dir .oh-my-memory
+```
+
+You should see:
+
+- a new run folder under `.oh-my-memory/runs/`
+- `report.json` and `report.md`
+- aggregate outputs in `.oh-my-memory/aggregate.json` and `.oh-my-memory/aggregate.md`
